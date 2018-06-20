@@ -37,6 +37,7 @@ FramePoseStruct::FramePoseStruct(Frame* frame)
 	thisToParent_raw = camToWorld = camToWorld_new = Sim3();
 	this->frame = frame;
 	frameID = frame->id();
+	timestamp = frame->timestamp();
 	trackingParent = 0;
 	isRegisteredToGraph = false;
 	hasUnmergedPose = false;

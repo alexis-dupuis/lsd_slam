@@ -184,8 +184,8 @@ int main( int argc, char** argv )
 	}
 
 
-	application.exec();
-
+	application.exec();	
+		
 	printf("Shutting down... \n");
 	ros::shutdown();
 	rosThread.join();

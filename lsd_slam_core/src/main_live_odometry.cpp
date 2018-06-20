@@ -63,8 +63,6 @@ int main( int argc, char** argv )
 	LiveSLAMWrapper slamNode(inputStream, outputWrapper);
 	slamNode.Loop();
 
-
-
 	if (inputStream != nullptr)
 		delete inputStream;
 	if (outputWrapper != nullptr)

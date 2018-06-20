@@ -24,6 +24,7 @@
 #include "util/settings.h"
 #include "util/globalFuncs.h"
 #include "SlamSystem.h"
+#include "DataStructures/FramePoseStruct.h"
 
 #include <sstream>
 #include <fstream>
@@ -37,6 +38,7 @@
 #include <ros/package.h>
 
 #include "opencv2/opencv.hpp"
+
 
 std::string &ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
@@ -267,11 +269,98 @@ int main( int argc, char** argv )
 			break;
 	}
 
-
+	system->optimizeGraph();	
 	system->finalize();
 
+    auto poses = system->getAllPoses();
+    //int N = poses.size();
 
+    std::string posePath = "/media/sf_myShare/exp_results/lsd_slam/lsd_pose_result.txt";
+    std::string timestampsPath = "/media/sf_myShare/MH_01_easy/mav0/cam0/data_dso.txt";
+    std::cout << "Writing transforms to:" << posePath << "\n";
 
+    std::ofstream out;
+    std::ifstream in;
+
+    std::vector<std::string> tsList;
+    in.open(timestampsPath);
+
+    if (in.is_open())
+    { 
+      while ( in.good() )
+      {
+        std::string line;
+	std::getline(in,line);
+	std::istringstream iss (line);
+
+	std::string ts;
+	std::getline(iss,ts, ' ');
+	std::getline(iss,ts, ' ');
+	
+	
+	if (ts.size()>0){ ts.insert(10,"."); }
+	tsList.push_back(ts);
+
+      }
+      in.close();
+    }
+
+    else std::cout << "Unable to open timestamps file" << std::endl;
+    
+    out.open(posePath);
+
+    for (FramePoseStruct* pose: poses) {
+	Sim3 camToWorld = pose->getCamToWorld(10);
+	float ox = camToWorld.data()[0];
+	float oy = camToWorld.data()[1];
+	float oz = camToWorld.data()[2];
+	float ow = camToWorld.data()[3];
+	float x = camToWorld.data()[4];
+	float y = camToWorld.data()[5];
+	float z = camToWorld.data()[6];
+	/*float tox = camToWorld.data()[11];
+	float toy = camToWorld.data()[12];
+	float toz = camToWorld.data()[13];
+	float tow = camToWorld.data()[14];*/
+
+	int frame_offset = 987;
+
+	int numline = pose->frameID;
+	std::string stamp = tsList[numline + frame_offset];
+	
+
+	/*if (ow < 0)
+	{
+	    ox *= -1;
+	    oy *= -1;
+	    oz *= -1;
+	    ow *= -1;
+	}*/
+
+    	//float stamp = ros::Time(pose->timestamp());
+	out << stamp << ' '
+	    << x << ' '
+	    << y << ' '
+	    << z << ' '
+	    << ox << ' '
+	    << oy << ' '
+	    << oz << ' '
+	    << ow << std::endl;
+
+        /*auto mat = T.matrix3x4();
+        for (int i=0; i<3; ++i) {
+            for (int j=0; j<4; ++j) {
+                double val = mat(i,j);
+                //out.write((char*) &val, sizeof(double));
+		out << val << ' ';
+            }
+        }
+	out << std::endl;*/
+    }
+
+    out.close();
+		
+	
 	delete system;
 	delete undistorter;
 	delete outputWrapper;

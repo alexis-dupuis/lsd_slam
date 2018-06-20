@@ -9,9 +9,9 @@ project(lsd_slam_core)
 #  MinSizeRel : w/o debug symbols, w/ optimization, stripped binaries
 set(CMAKE_BUILD_TYPE Release)
 
+find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  OpenCV
   dynamic_reconfigure
   sensor_msgs
   image_transport
@@ -101,13 +101,13 @@ include_directories(
 
 # build shared library.
 add_library(lsdslam SHARED ${SOURCE_FILES})
-target_link_libraries(lsdslam ${FABMAP_LIB} ${G2O_LIBRARIES} ${catkin_LIBRARIES} csparse cxsparse X11)
+target_link_libraries(lsdslam ${FABMAP_LIB} ${G2O_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} csparse cxsparse X11)
 #rosbuild_link_boost(lsdslam thread)
 
 
 # build live ros node
 add_executable(live_slam src/main_live_odometry.cpp)
-target_link_libraries(live_slam lsdslam ${catkin_LIBRARIES} ${G2O_LIBRARIES})
+target_link_libraries(live_slam lsdslam ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${G2O_LIBRARIES})
 
 
 # build image node
@@ -115,7 +115,7 @@ add_executable(dataset src/main_on_images.cpp)
 add_dependencies(lsdslam lsd_slam_viewer_generate_messages_cpp)
 add_dependencies(live_slam lsd_slam_viewer_generate_messages_cpp)
 add_dependencies(dataset lsd_slam_viewer_generate_messages_cpp)
-target_link_libraries(dataset lsdslam ${catkin_LIBRARIES} ${G2O_LIBRARIES})
+target_link_libraries(dataset lsdslam ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${G2O_LIBRARIES})
 target_link_libraries(live_slam lsdslam ${OpenCV_LIBRARIES})
 
 # TODO add INSTALL

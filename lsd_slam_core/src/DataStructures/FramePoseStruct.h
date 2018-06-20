@@ -44,6 +44,7 @@ public:
 
 	int frameID;
 	Frame* frame;
+	double timestamp;
 
 
 	// whether this poseStruct is registered in the Graph. if true MEMORY WILL BE HANDLED BY GRAPH
